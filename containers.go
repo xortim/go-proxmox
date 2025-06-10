@@ -298,7 +298,7 @@ func (c *Container) HasTag(value string) bool {
 		return false
 	}
 
-	if c.ContainerConfig.Tags == "" {
+	if c.ContainerConfig.Tags == nil {
 		return false
 	}
 
@@ -328,8 +328,9 @@ func (c *Container) AddTag(ctx context.Context, value string) (*Task, error) {
 	}
 
 	c.ContainerConfig.TagsSlice = append(c.ContainerConfig.TagsSlice, value)
-	c.ContainerConfig.Tags = strings.Join(c.ContainerConfig.TagsSlice, TagSeperator)
-	c.Tags = c.ContainerConfig.Tags // Keep the parent object up to date
+	joined := strings.Join(c.ContainerConfig.TagsSlice, TagSeperator)
+	c.ContainerConfig.Tags = &joined
+	c.Tags = joined // Keep the parent object up to date
 
 	return c.Config(ctx, ContainerOption{
 		Name:  "tags",
@@ -358,15 +359,16 @@ func (c *Container) RemoveTag(ctx context.Context, value string) (*Task, error) 
 		}
 	}
 
-	c.ContainerConfig.Tags = strings.Join(c.ContainerConfig.TagsSlice, TagSeperator)
-	c.Tags = c.ContainerConfig.Tags // keep the parent object up to date
+	joined := strings.Join(c.ContainerConfig.TagsSlice, TagSeperator)
+	c.ContainerConfig.Tags = &joined
+	c.Tags = joined // keep the parent object up to date
 	return c.Config(ctx, ContainerOption{
 		Name:  "tags",
 		Value: c.ContainerConfig.Tags,
 	})
 }
 
-// SplitTags sets ContainerConfig TagsSlice my splitting the value of ContainerConfig.Tags with TagSeparator
+// SplitTags sets ContainerConfig TagsSlice by splitting the value of ContainerConfig.Tags with TagSeparator
 func (c *Container) SplitTags() {
-	c.ContainerConfig.TagsSlice = strings.Split(c.ContainerConfig.Tags, TagSeperator)
+	c.ContainerConfig.TagsSlice = strings.Split(*c.ContainerConfig.Tags, TagSeperator)
 }
